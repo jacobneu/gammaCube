@@ -1,0 +1,3 @@
+name: gammaCube
+include: .
+flags: --without-K --prop
