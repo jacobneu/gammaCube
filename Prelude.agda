@@ -154,3 +154,16 @@ x ≡⟨ refl ⟩ refl = refl
 
 _∎ : ∀ {ℓ} {X : Type ℓ} (x : X) → x ≡ x
 x ∎ = refl 
+
+-- Function stuff (replace with import?)
+
+swapp : ∀ {i} {X Y Z : Prop i} → (X → Y → Z) → Y → X → Z
+swapp f y x = f x y
+
+record _≅_ {i} (X Y : Type i) : Type i where 
+  field
+    ltr : X → Y
+    rtl : Y → X
+    ≡idl : (x : X) → rtl(ltr x) ≡ x
+    ≡idr : (y : Y) → ltr(rtl y) ≡ y
+open _≅_ public 

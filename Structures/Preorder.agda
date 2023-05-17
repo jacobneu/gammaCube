@@ -68,5 +68,23 @@ record PreordSec⁻ {i}(Γ : Preord i){j}(A : PreordFam⁻ Γ j) : Type (i ⊔ j
     ∣_∣t⁻ : (γ : ∣ Γ ∣C) → ∣ A ∣T⁻ γ
     ≤t⁻   : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ≤ γ') → A T⁻ p ⊢ (∣_∣t⁻ γ) ≤ (∣_∣t⁻ γ')
   infix 4 ∣_∣t⁻
-open PreordSec⁺ public
+open PreordSec⁻ public
 
+
+-- Concrete Polarization
+
+_⁻C : ∀{i} → Preord i → Preord i
+Δ ⁻C = record 
+     { ∣_∣C = ∣ Δ ∣C 
+     ; _C_≤_ = λ δ₀ δ₁ → Δ C δ₁ ≤ δ₀ 
+     ; refC = refC Δ 
+     ; transC = swapp (transC Δ) 
+     }
+_⁻S : ∀{i j}{Γ : Preord i}{Δ : Preord j} → PreordMor Γ Δ → PreordMor (Γ ⁻C) (Δ ⁻C)
+σ ⁻S = record { ∣_∣s = ∣ σ ∣s ; ≤s = ≤s σ }
+
+_⁻CT : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁻ (Γ ⁻C) j
+A ⁻CT = mkTy⁻ (∣ A ∣T⁺_) (λ p a a' → A T⁺ p ⊢ a' ≤ a) (refT⁺ A) (swapp (transT⁺ A)) (coeT⁺ A) (cohT⁺ A)
+
+-- _⁻T : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁺ Γ j
+-- A ⁻T = mkTy⁺ (∣ A ∣T⁺_) (λ p a a' → {!   !}) {!   !} {!   !} {!   !} {!   !}
