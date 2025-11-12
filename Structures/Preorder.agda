@@ -38,6 +38,11 @@ record PreordFam⁺ {i}(Γ : Preord i) j : Type (i ⊔ lsuc j) where
             → _T⁺_⊢_≤_ p α α' → _T⁺_⊢_≤_ q α' α'' → _T⁺_⊢_≤_ (transC Γ p q) α α''
     coeT⁺    : {γ γ' : ∣ Γ ∣C} → Γ C γ ≤ γ' → ∣_∣T⁺_ γ → ∣_∣T⁺_ γ'
     cohT⁺    : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ≤ γ')(α : ∣_∣T⁺_ γ) → _T⁺_⊢_≤_ p α (coeT⁺ p α)
+    cartT⁺   : ∀{γ γ' γ''}(α : ∣_∣T⁺_ γ){p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}(α'' : ∣_∣T⁺_ γ'')
+               (φ : _T⁺_⊢_≤_ (transC Γ p q) α α'') → _T⁺_⊢_≤_ q (coeT⁺ p α) α''
+    coeT⁺-ref : ∀ {γ}(α : ∣_∣T⁺_ γ) → (coeT⁺ (refC Γ γ) α) ≡ α
+    coeT⁺-trans : ∀ {γ γ' γ''}{p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}(α : ∣_∣T⁺_ γ) → 
+                  (coeT⁺ (transC Γ p q) α) ≡ coeT⁺ q (coeT⁺ p α)
   infix 4 ∣_∣T⁺_
   infix 5 _T⁺_⊢_≤_
 open PreordFam⁺ public
@@ -86,5 +91,15 @@ _⁻S : ∀{i j}{Γ : Preord i}{Δ : Preord j} → PreordMor Γ Δ → PreordMor
 _⁻CT : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁻ (Γ ⁻C) j
 A ⁻CT = mkTy⁻ (∣ A ∣T⁺_) (λ p a a' → A T⁺ p ⊢ a' ≤ a) (refT⁺ A) (swapp (transT⁺ A)) (coeT⁺ A) (cohT⁺ A)
 
--- _⁻T : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁺ Γ j
--- A ⁻T = mkTy⁺ (∣ A ∣T⁺_) (λ p a a' → {!   !}) {!   !} {!   !} {!   !} {!   !}
+_⁻T : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁺ Γ j
+_⁻T {i}{j}{Γ} A = mkTy⁺ ((∣_∣T⁺_ A)) 
+         ((λ {γ} {γ'} p α α' → _T⁺_⊢_≤_ A (refC Γ γ') α' (coeT⁺ A p α)))
+         (λ {γ} α → trₚ (λ x → A T⁺ (refC Γ γ) ⊢ α ≤ x) (symm (coeT⁺-ref A α)) (refT⁺ A α)) 
+         (λ {γ}{γ'}{γ''}{p}{q}{α}{α'}{α''} x x₁ → trₚ (λ x₂ → A T⁺ (refC Γ γ'') ⊢ α'' ≤ x₂) (symm (coeT⁺-trans A α)) (transT⁺ A {p = refC Γ γ''} {q = refC Γ γ''} x₁ (cartT⁺ A α' (coeT⁺ A _ (coeT⁺ A _ α)) (transT⁺ A {p = (refC Γ γ')} {q = q} x (cohT⁺ A q (coeT⁺ A p α)))))) 
+         (coeT⁺ A) 
+         (λ p α → refT⁺ A (coeT⁺ A p α)) 
+         (λ {γ}{γ'}{γ''} α α'' φ → trₚ (λ x → A T⁺ _ ⊢ α'' ≤ x) (coeT⁺-trans A α) φ) 
+         (coeT⁺-ref A) 
+         (coeT⁺-trans A)
+
+--  

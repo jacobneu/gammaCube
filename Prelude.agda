@@ -82,19 +82,19 @@ record ↑pl {ℓ ℓ'}(A : Prop ℓ) : Prop (ℓ ⊔ ℓ') where
     un↑pl : A
 open ↑pl public
 
-data Tr {i}(A : Type i) : Prop i where
-  tr : A → Tr A
+data Trunc {i}(A : Type i) : Prop i where
+  trunc : A → Trunc A
 
-untr : ∀{i j}{A : Type i}{B : Tr A → Prop j} → ((x : A) → B (tr x)) → (x : Tr A) → B x
-untr f (tr x) = f x
+untrunc : ∀{i j}{A : Type i}{B : Trunc A → Prop j} → ((x : A) → B (trunc x)) → (x : Trunc A) → B x
+untrunc f (trunc x) = f x
 
 data ⊥p : Prop where
 
 ⊤p : Prop
-⊤p = Tr ⊤
+⊤p = Trunc ⊤
 
 ttp : ⊤p
-ttp = tr tt
+ttp = trunc tt
 
 ⊥pelim : ∀{ℓ}{A : Type ℓ} → ⊥p → A
 ⊥pelim ()
@@ -154,6 +154,16 @@ x ≡⟨ refl ⟩ refl = refl
 
 _∎ : ∀ {ℓ} {X : Type ℓ} (x : X) → x ≡ x
 x ∎ = refl 
+
+symm : ∀ {i} {X : Type i} {x x' : X} (p : x ≡ x') → x' ≡ x
+symm refl = refl
+
+tr : ∀ {i} {j} {X : Type i} (Y : X → Type j) {x x' : X} (p : x ≡ x') →  Y x → Y x'
+tr Y refl y = y
+
+
+trₚ : ∀ {i} {j} {X : Type i} (Y : X → Prop j) {x x' : X} (p : x ≡ x') →  Y x → Y x'
+trₚ Y refl y = y
 
 -- Function stuff (replace with import?)
 
