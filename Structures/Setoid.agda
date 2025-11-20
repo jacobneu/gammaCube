@@ -40,10 +40,12 @@ record SetoidFam {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
             → _T_⊢_~_ p α α' → _T_⊢_~_ q α' α'' → _T_⊢_~_ (transC Γ p q) α α''
     coeT    : {γ γ' : ∣ Γ ∣C} → Γ C γ ~ γ' → ∣_∣T_ γ → ∣_∣T_ γ'
     cohT    : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ~ γ')(α : ∣_∣T_ γ) → _T_⊢_~_ p α (coeT p α)
+    coeT-ref : ∀ {γ}(α : ∣_∣T_ γ) → (coeT (refC Γ γ) α) ≡ α
+    coeT-trans : ∀ {γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}(α : ∣_∣T_ γ) → 
+                  (coeT (transC Γ p q) α) ≡ coeT q (coeT p α)
   infix 4 ∣_∣T_
   infix 5 _T_⊢_~_
 open SetoidFam public
-
 
 record SetoidSec {i}(Γ : Setoid i){j}(A : SetoidFam Γ j) : Type (i ⊔ j) where
   field
