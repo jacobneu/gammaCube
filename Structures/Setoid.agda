@@ -26,30 +26,3 @@ record SetoidMor {i j}(Γ : Setoid i)(Δ : Setoid j) : Type (i ⊔ j) where
     ~s   : {γ γ' : ∣ Γ ∣C} → Γ C γ ~ γ' → Δ C (∣_∣s γ) ~ (∣_∣s γ')
   infix 4 ∣_∣s
 open SetoidMor public
-
-record SetoidFam {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
-  constructor mkTy
-  field
-    ∣_∣T_   : ∣ Γ ∣C → Set j
-    _T_⊢_~_ : ∀{γ γ'}(p : Γ C γ ~ γ') → ∣_∣T_ γ → ∣_∣T_ γ' → Prop j
-    refT    : ∀{γ} α → _T_⊢_~_ (refC Γ γ) α α
-    symT    : ∀{γ γ'}{p : Γ C γ ~ γ'}{α : ∣_∣T_ γ}{α' : ∣_∣T_ γ'}
-            → _T_⊢_~_ p α α' → _T_⊢_~_ (symC Γ p) α' α
-    transT  : ∀{γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}
-              {α : ∣_∣T_ γ}{α' : ∣_∣T_ γ'}{α'' : ∣_∣T_ γ''}
-            → _T_⊢_~_ p α α' → _T_⊢_~_ q α' α'' → _T_⊢_~_ (transC Γ p q) α α''
-    coeT    : {γ γ' : ∣ Γ ∣C} → Γ C γ ~ γ' → ∣_∣T_ γ → ∣_∣T_ γ'
-    cohT    : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ~ γ')(α : ∣_∣T_ γ) → _T_⊢_~_ p α (coeT p α)
-    coeT-ref : ∀ {γ}(α : ∣_∣T_ γ) → (coeT (refC Γ γ) α) ≡ α
-    coeT-trans : ∀ {γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}(α : ∣_∣T_ γ) → 
-                  (coeT (transC Γ p q) α) ≡ coeT q (coeT p α)
-  infix 4 ∣_∣T_
-  infix 5 _T_⊢_~_
-open SetoidFam public
-
-record SetoidSec {i}(Γ : Setoid i){j}(A : SetoidFam Γ j) : Type (i ⊔ j) where
-  field
-    ∣_∣t : (γ : ∣ Γ ∣C) → ∣ A ∣T γ
-    ~t   : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ~ γ') → A T p ⊢ (∣_∣t γ) ~ (∣_∣t γ')
-  infix 4 ∣_∣t
-open SetoidSec public
