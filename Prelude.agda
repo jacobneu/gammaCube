@@ -36,6 +36,10 @@ _×p_ : ∀{ℓ ℓ'} → Prop ℓ → Prop ℓ' → Prop (ℓ ⊔ ℓ')
 A ×p B = Σp A λ _ → B
 infixl 4 _×p_
 
+
+_↔_ : ∀{ℓ ℓ'} → Prop ℓ → Prop ℓ' → Prop (ℓ ⊔ ℓ')
+A ↔ B = (A → B) ×p (B → A)
+
 record Σps {ℓ ℓ'} (A : Prop ℓ) (B : A → Type ℓ') : Type (ℓ ⊔ ℓ') where
   constructor _,ps_
   field
@@ -161,6 +165,8 @@ symm refl = refl
 tr : ∀ {i} {j} {X : Type i} (Y : X → Type j) {x x' : X} (p : x ≡ x') →  Y x → Y x'
 tr Y refl y = y
 
+ap : ∀ {i} {j} {X : Type i} {Y : Type j} (f : X → Y) {x x' : X} (p : x ≡ x') → f x ≡ f x'
+ap f refl = refl 
 
 trₚ : ∀ {i} {j} {X : Type i} (Y : X → Prop j) {x x' : X} (p : x ≡ x') →  Y x → Y x'
 trₚ Y refl y = y
@@ -176,4 +182,7 @@ record _≅_ {i} (X Y : Type i) : Type i where
     rtl : Y → X
     ≡idl : (x : X) → rtl(ltr x) ≡ x
     ≡idr : (y : Y) → ltr(rtl y) ≡ y
-open _≅_ public 
+open _≅_ public
+
+postulate
+  funext : ∀ {i}{X Y : Type i} → (f g : X → Y) → ((x : X) → f x ≡ g x) → f ≡ g
