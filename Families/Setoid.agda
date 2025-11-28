@@ -9,7 +9,7 @@ module Displayed where
 
     record DispSetoid {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
         field
-            ∣_∣T_   : ∣ Γ ∣C → Set j
+            ∣_∣T_   : ∣ Γ ∣C → Type j
             _T_⊢_~_ : ∀{γ γ'}(p : Γ C γ ~ γ') → ∣_∣T_ γ → ∣_∣T_ γ' → Prop j
             refT    : ∀{γ} α → _T_⊢_~_ (refC Γ γ) α α
             symT    : ∀{γ γ'}{p : Γ C γ ~ γ'}{α : ∣_∣T_ γ}{α' : ∣_∣T_ γ'}
@@ -19,7 +19,13 @@ module Displayed where
                     → _T_⊢_~_ p α α' → _T_⊢_~_ q α' α'' → _T_⊢_~_ (transC Γ p q) α α''
         infix 4 ∣_∣T_
         infix 5 _T_⊢_~_
-    open DispSetoid public   
+    open DispSetoid public
+
+    -- DispSetoid-≡-intro : ∀ {i}{Γ : Setoid i}{j}(α α' : DispSetoid Γ j) → 
+    --     (base : ∣ α ∣T_ ≡ ∣ α' ∣T_) →
+    --     (_≡_ {X = {γ γ' : ∣ Γ ∣C} → Γ C γ ~ γ' → ∣ α ∣T γ → ∣ α ∣T γ' → Prop j} (λ {γ γ'}(p : Γ C γ ~ γ')(x : ∣ α ∣T γ)(x' : ∣ α ∣T γ') → _T_⊢_~_ α {γ} {γ'} p x x') λ {γ γ'}(p : Γ C γ ~ γ')(x : ∣ α ∣T γ)(x' : ∣ α ∣T γ') → _T_⊢_~_ α' {γ} {γ'} p (tr (λ φ → φ γ) base x) (tr (λ φ → φ γ') base x')) →  
+    --     α ≡ α'
+    -- DispSetoid-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; _T_⊢_~_ = _T_⊢_~₁_ ; refT = refT₁ ; symT = symT₁ ; transT = transT₁ } refl c = {! c !}
 
     record SetoidSec {i}(Γ : Setoid i){j}(A : DispSetoid Γ j) : Type (i ⊔ j) where
         field
@@ -46,6 +52,8 @@ module Pseudo where
 
     psSetoidFam-is-DispSetoid : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → DispSetoid Γ j
     psSetoidFam-is-DispSetoid Γ j = fst
+
+    -- psSetoidFam-≡-intro : 
 
     record PseudoFunctor {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
         field
