@@ -27,14 +27,6 @@ module Displayed where
     --     α ≡ α'
     -- DispSetoid-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; _T_⊢_~_ = _T_⊢_~₁_ ; refT = refT₁ ; symT = symT₁ ; transT = transT₁ } refl c = {! c !}
 
-    record SetoidSec {i}(Γ : Setoid i){j}(A : DispSetoid Γ j) : Type (i ⊔ j) where
-        field
-            ∣_∣t : (γ : ∣ Γ ∣C) → ∣ A ∣T γ
-            ~t   : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ~ γ') → A T p ⊢ (∣_∣t γ) ~ (∣_∣t γ')
-        infix 4 ∣_∣t
-    open SetoidSec public
-
-
 module Pseudo where
 
     open Setoid
@@ -64,7 +56,12 @@ module Pseudo where
                 (obj γ'') C ∣ mor (transC Γ p q) ∣s x ~ ∣ mor q ∣s (∣ mor p ∣s x)
     open PseudoFunctor
 
-
+    psFam-functorial : ∀ {i}{Γ : Setoid i}{j}(α : psSetoidFam Γ j){γ γ' : ∣ Γ ∣C}
+        (p : Γ C γ ~ γ')
+        {x y : ∣ fst α ∣T γ} → 
+        (fst α) T refC Γ γ ⊢ x ~ y →
+        (fst α) T refC Γ γ' ⊢ coeT (snd α) p x ~ coeT (snd α) p y
+    psFam-functorial α p {x}{y} φ = transT (fst α) (symT (fst α) (cohT (snd α) p x)) (transT (fst α) φ (cohT (snd α) p y))  
 
     psFam-to-psFunct : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → PseudoFunctor Γ j
     psFam-to-psFunct Γ j α = record  
