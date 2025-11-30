@@ -28,10 +28,21 @@ module Fibrant where
 
   trspt : ∀ {i}{Γ : Setoid i}{α : psSetoidFam Γ i}{β : psSetoidFam (Γ ▷ (fst α)) i}{s t : SetoidSec Γ (fst α)}
     (f : SetoidSec Γ (Id s t)) →
-    SetoidSec Γ {i} (_[_]T (fst β) (_,s_ id s)) →
-    SetoidSec Γ {i} (_[_]T (fst β) (_,s_ id t))
+    SetoidSec Γ {i} (_[_]T (fst β) (id,s s)) →
+    SetoidSec Γ {i} (_[_]T (fst β) (id,s t))
   trspt {i}{Γ}{α}{β}{s}{t} f b = record 
     { ∣_∣t = λ γ → coeT (snd β) (refC Γ γ ,p un↑ps (∣ f ∣t γ)) (∣ b ∣t γ)
-    ; ~t = λ {γ} {γ'} p →  let helper γ = (refC Γ γ) ,p un↑ps (∣ f ∣t γ) in
-        transT (fst β) (symT (fst β) (cohT (snd β) (helper γ) (∣ b ∣t γ))) (transT (fst β) (~t b p) (cohT (snd β) (helper γ') (∣ b ∣t γ')))
+    ; ~t = λ {γ} {γ'} p →  
+        let 
+          helper γ = (refC Γ γ) ,p un↑ps (∣ f ∣t γ)
+          open Disp~Reasoning (fst β)
+        in
+          coeT (snd β) (helper γ) (∣ b ∣t γ) 
+              ~D⟨ reverseT (cohT (snd β) (helper γ) (∣ b ∣t γ)) ⟩
+          ∣ b ∣t γ 
+              ~D⟨ ~t b p ⟩
+          ∣ b ∣t γ'
+              ~D⟨ cohT (snd β) (helper γ') (∣ b ∣t γ') ⟩
+          coeT (snd β) (helper γ') (∣ b ∣t γ')    
+              ~D∎
     }

@@ -27,6 +27,23 @@ module Displayed where
     --     α ≡ α'
     -- DispSetoid-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; _T_⊢_~_ = _T_⊢_~₁_ ; refT = refT₁ ; symT = symT₁ ; transT = transT₁ } refl c = {! c !}
 
+module Disp~Reasoning {i}{Γ : Setoid i}{j}(α : Displayed.DispSetoid Γ j) where
+    open Displayed
+
+    infixr 30 _~D⟨_⟩_
+    infixl 40 _~D∎
+
+    _~D∎ : ∀{γ} x → _T_⊢_~_ α (refC Γ γ) x x
+    _~D∎ = refT α
+
+    _~D⟨_⟩_ : ∀{γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}(x : ∣ α ∣T γ){x' : ∣ α ∣T γ'} →
+        α T p ⊢ x ~ x' → {x'' : ∣ α ∣T γ''} → α T q ⊢ x' ~ x'' → α T transC Γ p q ⊢ x ~ x''
+    x ~D⟨ φ ⟩ ψ = transT α φ ψ
+
+    reverseT : ∀{γ γ'}{p : Γ C γ ~ γ'}{x : ∣ α ∣T γ}{x' : ∣ α ∣T γ'}
+                    → α T p ⊢ x ~ x' → α T symC Γ p ⊢ x' ~ x
+    reverseT = symT α
+
 module Pseudo where
 
     open Setoid
@@ -64,7 +81,9 @@ module Pseudo where
     psFam-functorial α p {x}{y} φ = transT (fst α) (symT (fst α) (cohT (snd α) p x)) (transT (fst α) φ (cohT (snd α) p y))  
 
     psFam-to-psFunct : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → PseudoFunctor Γ j
-    psFam-to-psFunct Γ j α = record  
+    psFam-to-psFunct Γ j α = 
+        let open Disp~Reasoning (fst α) in
+        record  
         { obj = λ γ → record 
             { ∣_∣C = ∣ fst α ∣T γ 
             ; _C_~_ =  _T_⊢_~_ (fst α) (refC Γ γ)
@@ -73,22 +92,59 @@ module Pseudo where
             ; transC = transT (fst α) } 
         ; mor = λ {γ} {γ'} p → record 
             { ∣_∣s = coeT (snd α) p 
-            ; ~s = λ {x} {y} w → transT (fst α) (transT (fst α) (symT (fst α) (cohT (snd α) p x)) w) (cohT (snd α) p y) 
+            ; ~s = λ {x} {y} w → 
+                coeT (snd α) p x 
+                    ~D⟨ symT (fst α) (cohT (snd α) p x) ⟩
+                x 
+                    ~D⟨ w ⟩ 
+                y 
+                    ~D⟨ cohT (snd α) p y ⟩ 
+                coeT (snd α) p y       
+                    ~D∎
             } 
         ; zz = λ {γ} x → symT (fst α) (cohT (snd α) (refC Γ γ) x) 
-        ; tzt = λ p q x → transT (fst α) (symT (fst α) (cohT (snd α) (transC Γ p q) x)) (transT (fst α) (cohT (snd α) p x) (cohT (snd α) q (coeT (snd α) p x)))
+        ; tzt = λ p q x → 
+            coeT (snd α) (transC Γ p q) x 
+                ~D⟨ symT (fst α) (cohT (snd α) (transC Γ p q) x) ⟩
+            x 
+                ~D⟨ cohT (snd α) p x ⟩
+            coeT (snd α) p x 
+                ~D⟨ cohT (snd α) q (coeT (snd α) p x) ⟩
+            coeT (snd α) q (coeT (snd α) p x)
+                ~D∎
         }
 
     psFunct-to-psFam : ∀ {i} (Γ : Setoid i) j → PseudoFunctor Γ j → psSetoidFam Γ j
-    psFunct-to-psFam Γ j A = (record
+    psFunct-to-psFam Γ j A =
+       record
        { ∣_∣T_ = λ γ → ∣ obj A γ ∣C 
        ; _T_⊢_~_ = λ {γ} {γ'} p x x' → (obj A γ') C ∣ mor A p ∣s x ~ x' 
        ; refT = λ x → zz A x 
-       ; symT = λ {γ} {γ'} {p} {x} {y} w' → symC (obj A γ) (transC (obj A γ) (transC (obj A γ) ( symC (obj A γ) (zz A x)) (tzt A p (symC Γ p) x)) (~s (mor A (symC Γ p)) w'))
-       ; transT = λ {γ} {γ'} {γ''} {p} {q} {x} x' x'' → transC (obj A γ'') (transC (obj A γ'') (tzt A p q x) (~s (mor A q) x')) x'' }), (record 
+       ; symT = λ {γ} {γ'} {p} {x} {y} w' → 
+            let open ~Reasoning (obj A γ) in
+                ∣ mor A (symC Γ p) ∣s y
+                    ~⟨ ~s (mor A (symC Γ p)) w' ⁻¹ ⟩
+                ∣ mor A (symC Γ p) ∣s (∣ mor A p ∣s x)
+                    ~⟨ tzt A p (symC Γ p) x ⁻¹ ⟩
+                ∣ mor A (refC Γ γ) ∣s x
+                    ~⟨ zz A x ⟩
+                x
+                    ~∎
+       ; transT = λ {γ} {γ'} {γ''} {p} {q} {x} {x'} {x''} φ ψ →
+            let open ~Reasoning (obj A γ'') in
+                ∣ mor A (transC Γ p q) ∣s x 
+                    ~⟨ tzt A p q x ⟩ 
+                ∣ mor A q ∣s (∣ mor A p ∣s x) 
+                    ~⟨ ~s (mor A q) φ ⟩
+                ∣ mor A q ∣s x'
+                    ~⟨ ψ ⟩
+                x'' 
+                    ~∎
+       },
+       record 
        { coeT = λ p → ∣ mor A p ∣s 
        ; cohT = λ {γ} {γ'} p x → refC (obj A γ') (∣ mor A p ∣s x) 
-       })
+       }
 
 module Split where
 

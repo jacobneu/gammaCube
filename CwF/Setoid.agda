@@ -51,3 +51,14 @@ id {i}{Γ} = record
     { ∣_∣s = λ γ → γ
     ; ~s = λ p → p
     }
+
+-- _[id]T : ∀{i}{Γ : Setoid i}{j}{α : DispSetoid Γ j} →
+--     α [ id ]T ≡ α
+-- _[id]T = {!   !}
+id,s : ∀{i}{Γ : Setoid i}{j}{α : DispSetoid Γ j} →
+    SetoidSec Γ α → 
+    SetoidMor Γ (Γ ▷ α)
+id,s t = record 
+    { ∣_∣s = λ γ → γ , ∣ t ∣t γ
+    ; ~s = λ p → p ,p ~t t p 
+    }
