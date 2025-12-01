@@ -27,79 +27,13 @@ record PreordMor {i j}(Γ : Preord i)(Δ : Preord j) : Type (i ⊔ j) where
   infix 4 ∣_∣s
 open PreordMor public
 
-record PreordFam⁺ {i}(Γ : Preord i) j : Type (i ⊔ lsuc j) where
-  constructor mkTy⁺
-  field
-    ∣_∣T⁺_   : ∣ Γ ∣C → Type j
-    _T⁺_⊢_≤_ : ∀{γ γ'}(p : Γ C γ ≤ γ') → ∣_∣T⁺_ γ → ∣_∣T⁺_ γ' → Prop j
-    refT⁺    : ∀{γ} α → _T⁺_⊢_≤_ (refC Γ γ) α α
-    transT⁺  : ∀{γ γ' γ''}{p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}
-              {α : ∣_∣T⁺_ γ}{α' : ∣_∣T⁺_ γ'}{α'' : ∣_∣T⁺_ γ''}
-            → _T⁺_⊢_≤_ p α α' → _T⁺_⊢_≤_ q α' α'' → _T⁺_⊢_≤_ (transC Γ p q) α α''
-    coeT⁺    : {γ γ' : ∣ Γ ∣C} → Γ C γ ≤ γ' → ∣_∣T⁺_ γ → ∣_∣T⁺_ γ'
-    cohT⁺    : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ≤ γ')(α : ∣_∣T⁺_ γ) → _T⁺_⊢_≤_ p α (coeT⁺ p α)
-    cartT⁺   : ∀{γ γ' γ''}(α : ∣_∣T⁺_ γ){p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}(α'' : ∣_∣T⁺_ γ'')
-               (φ : _T⁺_⊢_≤_ (transC Γ p q) α α'') → _T⁺_⊢_≤_ q (coeT⁺ p α) α''
-    coeT⁺-ref : ∀ {γ}(α : ∣_∣T⁺_ γ) → (coeT⁺ (refC Γ γ) α) ≡ α
-    coeT⁺-trans : ∀ {γ γ' γ''}{p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}(α : ∣_∣T⁺_ γ) → 
-                  (coeT⁺ (transC Γ p q) α) ≡ coeT⁺ q (coeT⁺ p α)
-  infix 4 ∣_∣T⁺_
-  infix 5 _T⁺_⊢_≤_
-open PreordFam⁺ public
+module PreordReasoning {i} (Γ : Preord i) where
 
-record PreordFam⁻ {i}(Γ : Preord i) j : Type (i ⊔ lsuc j) where
-  constructor mkTy⁻
-  field
-    ∣_∣T⁻_   : ∣ Γ ∣C → Type j
-    _T⁻_⊢_≤_ : ∀{γ γ'}(p : Γ C γ ≤ γ') → ∣_∣T⁻_ γ → ∣_∣T⁻_ γ' → Prop j
-    refT⁻    : ∀{γ} α → _T⁻_⊢_≤_ (refC Γ γ) α α
-    transT⁻  : ∀{γ γ' γ''}{p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}
-              {α : ∣_∣T⁻_ γ}{α' : ∣_∣T⁻_ γ'}{α'' : ∣_∣T⁻_ γ''}
-            → _T⁻_⊢_≤_ p α α' → _T⁻_⊢_≤_ q α' α'' → _T⁻_⊢_≤_ (transC Γ p q) α α''
-    coeT⁻    : {γ γ' : ∣ Γ ∣C} → Γ C γ ≤ γ' → ∣_∣T⁻_ γ' → ∣_∣T⁻_ γ
-    cohT⁻    : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ≤ γ')(α' : ∣_∣T⁻_ γ') → _T⁻_⊢_≤_ p (coeT⁻ p α') α'
-  infix 4 ∣_∣T⁻_
-  infix 5 _T⁻_⊢_≤_
-open PreordFam⁻ public
+  infixr 30 _≤⟨_⟩_
+  infixl 40 _≤∎
 
-record PreordSec⁺ {i}(Γ : Preord i){j}(A : PreordFam⁺ Γ j) : Type (i ⊔ j) where
-  field
-    ∣_∣t⁺ : (γ : ∣ Γ ∣C) → ∣ A ∣T⁺ γ
-    ≤t⁺   : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ≤ γ') → A T⁺ p ⊢ (∣_∣t⁺ γ) ≤ (∣_∣t⁺ γ')
-  infix 4 ∣_∣t⁺
-open PreordSec⁺ public
-record PreordSec⁻ {i}(Γ : Preord i){j}(A : PreordFam⁻ Γ j) : Type (i ⊔ j) where
-  field
-    ∣_∣t⁻ : (γ : ∣ Γ ∣C) → ∣ A ∣T⁻ γ
-    ≤t⁻   : {γ γ' : ∣ Γ ∣C}(p : Γ C γ ≤ γ') → A T⁻ p ⊢ (∣_∣t⁻ γ) ≤ (∣_∣t⁻ γ')
-  infix 4 ∣_∣t⁻
-open PreordSec⁻ public
+  _≤∎ : ∀ γ → Γ C γ ≤ γ
+  _≤∎ = refC Γ
 
-
--- Concrete Polarization
-
-_⁻C : ∀{i} → Preord i → Preord i
-Δ ⁻C = record 
-     { ∣_∣C = ∣ Δ ∣C 
-     ; _C_≤_ = λ δ₀ δ₁ → Δ C δ₁ ≤ δ₀ 
-     ; refC = refC Δ 
-     ; transC = swapp (transC Δ) 
-     }
-_⁻S : ∀{i j}{Γ : Preord i}{Δ : Preord j} → PreordMor Γ Δ → PreordMor (Γ ⁻C) (Δ ⁻C)
-σ ⁻S = record { ∣_∣s = ∣ σ ∣s ; ≤s = ≤s σ }
-
-_⁻CT : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁻ (Γ ⁻C) j
-A ⁻CT = mkTy⁻ (∣ A ∣T⁺_) (λ p a a' → A T⁺ p ⊢ a' ≤ a) (refT⁺ A) (swapp (transT⁺ A)) (coeT⁺ A) (cohT⁺ A)
-
-_⁻T : ∀ {i j}{Γ : Preord i} → PreordFam⁺ Γ j → PreordFam⁺ Γ j
-_⁻T {i}{j}{Γ} A = mkTy⁺ ((∣_∣T⁺_ A)) 
-         ((λ {γ} {γ'} p α α' → _T⁺_⊢_≤_ A (refC Γ γ') α' (coeT⁺ A p α)))
-         (λ {γ} α → trₚ (λ x → A T⁺ (refC Γ γ) ⊢ α ≤ x) (symm (coeT⁺-ref A α)) (refT⁺ A α)) 
-         (λ {γ}{γ'}{γ''}{p}{q}{α}{α'}{α''} x x₁ → trₚ (λ x₂ → A T⁺ (refC Γ γ'') ⊢ α'' ≤ x₂) (symm (coeT⁺-trans A α)) (transT⁺ A {p = refC Γ γ''} {q = refC Γ γ''} x₁ (cartT⁺ A α' (coeT⁺ A _ (coeT⁺ A _ α)) (transT⁺ A {p = (refC Γ γ')} {q = q} x (cohT⁺ A q (coeT⁺ A p α)))))) 
-         (coeT⁺ A) 
-         (λ p α → refT⁺ A (coeT⁺ A p α)) 
-         (λ {γ}{γ'}{γ''} α α'' φ → trₚ (λ x → A T⁺ _ ⊢ α'' ≤ x) (coeT⁺-trans A α) φ) 
-         (coeT⁺-ref A) 
-         (coeT⁺-trans A)
-
---  
+  _≤⟨_⟩_ : ∀ (γ : ∣ Γ ∣C){γ' : ∣ Γ ∣C} → Γ C γ ≤ γ' → {γ'' : ∣ Γ ∣C} → Γ C γ' ≤ γ'' → Γ C γ ≤ γ''
+  γ ≤⟨ p ⟩ q = transC Γ p q
