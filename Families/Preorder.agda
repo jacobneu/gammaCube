@@ -59,6 +59,41 @@ module Pseudo where
     psPreordFam⁺ : ∀ {i} (Γ : Preord i) j → Type (i ⊔ lsuc j)
     psPreordFam⁺ Γ j = Σ (DispPreord Γ j) (psPreordFibrancy⁺ Γ j)
 
+    tzt : ∀ {i} {Γ : Preord i} {j} (α : psPreordFam⁺ Γ j) {γ γ' γ''}(x : ∣ fst α ∣T γ)(p : Γ C γ ≤ γ')(q : Γ C γ' ≤ γ'') →
+        fst α T (refC Γ γ'') ⊢ coeT⁺ (snd α) q (coeT⁺ (snd α) p x) ≤ coeT⁺ (snd α) (transC Γ p q) x
+    tzt {i}{Γ}{j} α x p q = 
+        cartT⁺ (snd α) (coeT⁺ (snd α) p x) (coeT⁺ (snd α) (transC Γ p q) x) 
+            (cartT⁺ (snd α) x _ (cohT⁺ (snd α) (transC Γ p q) _))
+    
+    tztop : ∀ {i} {Γ : Preord i} {j} (α : psPreordFam⁺ Γ j) {γ γ' γ''}(x : ∣ fst α ∣T γ)(p : Γ C γ ≤ γ')(q : Γ C γ' ≤ γ'') →
+        fst α T (refC Γ γ'') ⊢ coeT⁺ (snd α) (transC Γ p q) x ≤ coeT⁺ (snd α) q (coeT⁺ (snd α) p x)
+    tztop {i}{Γ}{j} α x p q = cartT⁺ (snd α) x _ (transT (fst α) (cohT⁺ (snd α) p _) (cohT⁺ (snd α) q _))
+
+    psFunctorial : ∀ {i} {Γ : Preord i} {j} (α : psPreordFam⁺ Γ j) {γ γ'}(x y : ∣ fst α ∣T γ)(p : Γ C γ ≤ γ') →
+        fst α T (refC Γ γ) ⊢ x ≤ y → fst α T (refC Γ γ') ⊢ coeT⁺ (snd α) p x ≤ coeT⁺ (snd α) p y
+    psFunctorial {i}{Γ}{j} α {γ}{γ'} x y p φ = cartT⁺ (snd α) x (coeT⁺ (snd α) p y) (transT (fst α) φ (cohT⁺ (snd α) p y))
+
+    _⁻ᵀ : ∀ {i} {Γ : Preord i} {j} → psPreordFam⁺ Γ j → psPreordFam⁺ Γ j
+    _⁻ᵀ {i}{Γ}{j} α = 
+        let open DispPreordReasoning (fst α) in record 
+        { ∣_∣T_ = ∣ fst α ∣T_
+        ; ≤D = λ γ γ' p x x' → ≤D (fst α) γ' γ' (refC Γ γ') x' (coeT⁺ (snd α) p x)
+        ; refT = λ {γ} x → cohT⁺ (snd α) (refC Γ γ) x
+        ; transT = λ {γ}{γ'}{γ''}{p}{q}{x}{x'}{x''} φ ψ →
+            x'' 
+                ≤T⟨ ψ ⟩ 
+            coeT⁺ (snd α) q x' 
+                ≤T⟨ psFunctorial α _ _ q φ ⟩ 
+            coeT⁺ (snd α) q (coeT⁺ (snd α) p x) 
+                ≤T⟨ tzt α x p q ⟩
+            (coeT⁺ (snd α) (transC Γ p q) x  ≤T∎) 
+        }
+        , record 
+        { coeT⁺ = coeT⁺ (snd α)
+        ; cohT⁺ = λ p x → refT (fst α) (coeT⁺ (snd α) p x)
+        ; cartT⁺ = λ x {p}{q} x'' φ → transT (fst α) φ (tztop α x p q)
+        }
+
     record psPreordFibrancy⁻ {i}(Γ : Preord i) j (α : DispPreord Γ j) : Type (i ⊔ lsuc j) where
         field
             coeT⁻    : {γ γ' : ∣ Γ ∣C} → Γ C γ ≤ γ' → ∣ α ∣T γ' → ∣ α ∣T γ
