@@ -1,2 +1,5 @@
 _build/*
 */sandbox.agda
+mkFrag
+latex/*
+*TEX.lagda

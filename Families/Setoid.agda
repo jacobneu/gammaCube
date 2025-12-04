@@ -6,7 +6,7 @@ open import Structures.Setoid public
 
 
 module Displayed where
-
+-- #FRAGMENT dispSetoidDefn
     record DispSetoid {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
         field
             ∣_∣T_   : ∣ Γ ∣C → Type j
@@ -17,6 +17,7 @@ module Displayed where
             transT  : ∀{γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}
                     {α : ∣_∣T_ γ}{α' : ∣_∣T_ γ'}{α'' : ∣_∣T_ γ''}
                     → _T_⊢_~_ p α α' → _T_⊢_~_ q α' α'' → _T_⊢_~_ (transC Γ p q) α α''
+-- /FRAGMENT dispSetoidDefn
         infix 4 ∣_∣T_
         infix 5 _T_⊢_~_
     open DispSetoid public
@@ -50,6 +51,7 @@ module Pseudo where
     open Displayed
     open Displayed.DispSetoid
 
+-- #FRAGMENT psSetoidFibDefn
     record psSetoidFibrancy {i}(Γ : Setoid i) j (α : DispSetoid Γ j) : Type (i ⊔ lsuc j) where
         field
             coeT    : {γ γ' : ∣ Γ ∣C} → (p : Γ C γ ~ γ') → ∣ α ∣T γ → ∣ α ∣T γ'
@@ -58,6 +60,7 @@ module Pseudo where
 
     psSetoidFam : ∀ {i} (Γ : Setoid i) j → Type (i ⊔ lsuc j)
     psSetoidFam Γ j = Σ (DispSetoid Γ j) (psSetoidFibrancy Γ j)
+-- /FRAGMENT psSetoidFibDefn
 
     psSetoidFam-is-DispSetoid : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → DispSetoid Γ j
     psSetoidFam-is-DispSetoid Γ j = fst
@@ -153,15 +156,16 @@ module Split where
     open Displayed.DispSetoid
     open Pseudo.psSetoidFibrancy
 
+-- #FRAGMENT splitSetoidFibDefn
     record splitSetoidFibrancy {i}(Γ : Setoid i) j (α : psSetoidFam Γ j) : Type (i ⊔ lsuc j) where
         field
             coeT-ref : ∀ {γ : ∣ Γ ∣C}( x :  ∣ fst α ∣T γ ) → coeT (snd α) (refC Γ γ) x ≡ x
             coeT-trans : ∀ {γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}(x : ∣ fst α ∣T γ) → 
                         (coeT (snd α) (transC Γ p q) x) ≡ coeT (snd α) q (coeT (snd α) p x)
-    
+
     splitSetoidFam : ∀ {i} (Γ : Setoid i) j → Type (i ⊔ lsuc j)
     splitSetoidFam Γ j = Σ (psSetoidFam Γ j) (splitSetoidFibrancy Γ j)
-
+-- /FRAGMENT splitSetoidFibDefn
     splitSetoidFam-is-DispSetoid : ∀ {i} (Γ : Setoid i) j → splitSetoidFam Γ j → DispSetoid Γ j
     splitSetoidFam-is-DispSetoid Γ j α = fst (fst α)
 
