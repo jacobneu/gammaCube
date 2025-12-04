@@ -30,7 +30,7 @@ _▷_ : ∀{i}(Γ : Setoid i){j}(α : DispSetoid Γ j) → Setoid (i ⊔ j)
 _[_]T : ∀{i}{Δ Γ : Setoid i}{j} → DispSetoid Γ j → SetoidMor Δ Γ → DispSetoid Δ j
 _[_]T {i}{Δ}{Γ}{j} α σ = record
   { ∣_∣T_ = λ δ → ∣ α ∣T ∣ σ ∣s δ
-  ; _T_⊢_~_ = λ p x x' → α T ~s σ p ⊢ x ~ x'
+  ; ~D = λ _ _ p x x' → α T ~s σ p ⊢ x ~ x'
   ; refT = λ x → refT α x
   ; symT = λ p → symT α p
   ; transT = λ p q → transT α p q
@@ -52,13 +52,11 @@ id {i}{Γ} = record
     ; ~s = λ p → p
     }
 
--- _[id]T : ∀{i}{Γ : Setoid i}{j}{α : DispSetoid Γ j} →
---     α [ id ]T ≡ α
--- _[id]T = {!   !}
+_[id]T : ∀{i}{Γ : Setoid i}{j}(α : DispSetoid Γ j) →
+    α [ id ]T ≡ α
+α [id]T = DispSetoid-≡-intro (α [ id ]T) α refl refl
+
 id,s : ∀{i}{Γ : Setoid i}{j}{α : DispSetoid Γ j} →
     SetoidSec Γ α → 
     SetoidMor Γ (Γ ▷ α)
-id,s t = record 
-    { ∣_∣s = λ γ → γ , ∣ t ∣t γ
-    ; ~s = λ p → p ,p ~t t p 
-    }
+id,s {i}{Γ}{j}{α} t = _,s_ {i}{Γ}{Γ}{j}{α} id (tr (SetoidSec Γ) (symm (α [id]T)) t)

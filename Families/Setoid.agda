@@ -10,25 +10,28 @@ module Displayed where
     record DispSetoid {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
         field
             ∣_∣T_   : ∣ Γ ∣C → Type j
-            _T_⊢_~_ : ∀{γ γ'}(p : Γ C γ ~ γ') → ∣_∣T_ γ → ∣_∣T_ γ' → Prop j
-            refT    : ∀{γ} α → _T_⊢_~_ (refC Γ γ) α α
-            symT    : ∀{γ γ'}{p : Γ C γ ~ γ'}{α : ∣_∣T_ γ}{α' : ∣_∣T_ γ'}
-                    → _T_⊢_~_ p α α' → _T_⊢_~_ (symC Γ p) α' α
+            ~D : ∀ (γ γ' : ∣ Γ ∣C)(p : Γ C γ ~ γ') → ∣_∣T_ γ → ∣_∣T_ γ' → Prop j
+            refT    : ∀{γ} x → ~D γ γ (refC Γ γ) x x
+            symT    : ∀{γ γ'}{p : Γ C γ ~ γ'}{x : ∣_∣T_ γ}{x' : ∣_∣T_ γ'}
+                    → ~D γ γ' p x x' → ~D γ' γ (symC Γ p) x' x
             transT  : ∀{γ γ' γ''}{p : Γ C γ ~ γ'}{q : Γ C γ' ~ γ''}
-                    {α : ∣_∣T_ γ}{α' : ∣_∣T_ γ'}{α'' : ∣_∣T_ γ''}
-                    → _T_⊢_~_ p α α' → _T_⊢_~_ q α' α'' → _T_⊢_~_ (transC Γ p q) α α''
+                    {x : ∣_∣T_ γ}{x' : ∣_∣T_ γ'}{x'' : ∣_∣T_ γ''}
+                    → ~D γ γ' p x x' → ~D γ' γ'' q x' x'' → ~D γ γ'' (transC Γ p q) x x''
 -- /FRAGMENT dispSetoidDefn
         infix 4 ∣_∣T_
-        infix 5 _T_⊢_~_
     open DispSetoid public
 
-    -- DispSetoid-≡-intro : ∀ {i}{Γ : Setoid i}{j}(α α' : DispSetoid Γ j) → 
-    --     (base : ∣ α ∣T_ ≡ ∣ α' ∣T_) →
-    --     (_≡_ {X = {γ γ' : ∣ Γ ∣C} → Γ C γ ~ γ' → ∣ α ∣T γ → ∣ α ∣T γ' → Prop j} (λ {γ γ'}(p : Γ C γ ~ γ')(x : ∣ α ∣T γ)(x' : ∣ α ∣T γ') → _T_⊢_~_ α {γ} {γ'} p x x') λ {γ γ'}(p : Γ C γ ~ γ')(x : ∣ α ∣T γ)(x' : ∣ α ∣T γ') → _T_⊢_~_ α' {γ} {γ'} p (tr (λ φ → φ γ) base x) (tr (λ φ → φ γ') base x')) →  
-    --     α ≡ α'
-    -- DispSetoid-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; _T_⊢_~_ = _T_⊢_~₁_ ; refT = refT₁ ; symT = symT₁ ; transT = transT₁ } refl c = {! c !}
+    infix 5 _T_⊢_~_
+    _T_⊢_~_ : ∀ {i}{Γ : Setoid i}{j}(α : DispSetoid Γ j){γ γ'}(p : Γ C γ ~ γ') → ∣ α ∣T γ → ∣ α ∣T γ' → Prop j
+    _T_⊢_~_ α {γ} {γ'} = ~D α γ γ'
 
-module Disp~Reasoning {i}{Γ : Setoid i}{j}(α : Displayed.DispSetoid Γ j) where
+    DispSetoid-≡-intro : ∀ {i}{Γ : Setoid i}{j} (α β : DispSetoid Γ j) →
+        (e1 : (λ γ → ∣ α ∣T γ) ≡ (λ γ → ∣ β ∣T γ)) →
+        (~D α) ≡ (λ γ γ' p x x' → ~D β γ γ' p (trₜ (congr e1 γ) x) (trₜ (congr e1 γ') x')) → 
+        α ≡ β
+    DispSetoid-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; ~D = .(~D α) ; refT = _ ; symT = _ ; transT = _ } refl refl = refl
+
+module DispSetoidReasoning {i}{Γ : Setoid i}{j}(α : Displayed.DispSetoid Γ j) where
     open Displayed
 
     infixr 30 _~D⟨_⟩_
@@ -85,7 +88,7 @@ module Pseudo where
 
     psFam-to-psFunct : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → PseudoFunctor Γ j
     psFam-to-psFunct Γ j α = 
-        let open Disp~Reasoning (fst α) in
+        let open DispSetoidReasoning (fst α) in
         record  
         { obj = λ γ → record 
             { ∣_∣C = ∣ fst α ∣T γ 
@@ -121,10 +124,10 @@ module Pseudo where
     psFunct-to-psFam Γ j A =
        record
        { ∣_∣T_ = λ γ → ∣ obj A γ ∣C 
-       ; _T_⊢_~_ = λ {γ} {γ'} p x x' → (obj A γ') C ∣ mor A p ∣s x ~ x' 
+       ; ~D = λ γ γ' p x x' → (obj A γ') C ∣ mor A p ∣s x ~ x' 
        ; refT = λ x → zz A x 
        ; symT = λ {γ} {γ'} {p} {x} {y} w' → 
-            let open ~Reasoning (obj A γ) in
+            let open SetoidReasoning (obj A γ) in
                 ∣ mor A (symC Γ p) ∣s y
                     ~⟨ ~s (mor A (symC Γ p)) w' ⁻¹ ⟩
                 ∣ mor A (symC Γ p) ∣s (∣ mor A p ∣s x)
@@ -134,7 +137,7 @@ module Pseudo where
                 x
                     ~∎
        ; transT = λ {γ} {γ'} {γ''} {p} {q} {x} {x'} {x''} φ ψ →
-            let open ~Reasoning (obj A γ'') in
+            let open SetoidReasoning (obj A γ'') in
                 ∣ mor A (transC Γ p q) ∣s x 
                     ~⟨ tzt A p q x ⟩ 
                 ∣ mor A q ∣s (∣ mor A p ∣s x) 

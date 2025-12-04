@@ -10,14 +10,23 @@ module Displayed where
     record DispPreord {i}(Γ : Preord i) j : Type (i ⊔ lsuc j) where
         field
             ∣_∣T_   : ∣ Γ ∣C → Type j
-            _T_⊢_≤_ : ∀{γ γ'}(p : Γ C γ ≤ γ') → ∣_∣T_ γ → ∣_∣T_ γ' → Prop j
-            refT    : ∀{γ} x → _T_⊢_≤_ (refC Γ γ) x x
+            ≤D : ∀ (γ γ' : ∣ Γ ∣C)(p : Γ C γ ≤ γ') → ∣_∣T_ γ → ∣_∣T_ γ' → Prop j
+            refT    : ∀{γ} x → ≤D γ γ (refC Γ γ) x x
             transT  : ∀{γ γ' γ''}{p : Γ C γ ≤ γ'}{q : Γ C γ' ≤ γ''}
                     {x : ∣_∣T_ γ}{x' : ∣_∣T_ γ'}{x'' : ∣_∣T_ γ''}
-                    → _T_⊢_≤_ p x x' → _T_⊢_≤_ q x' x'' → _T_⊢_≤_ (transC Γ p q) x x''
+                    → ≤D γ γ' p x x' → ≤D γ' γ'' q x' x'' → ≤D γ γ'' (transC Γ p q) x x''
         infix 4 ∣_∣T_
-        infix 5 _T_⊢_≤_
     open DispPreord public
+
+    infix 5 _T_⊢_≤_
+    _T_⊢_≤_ : ∀ {i}{Γ : Preord i}{j}(α : DispPreord Γ j){γ γ'}(p : Γ C γ ≤ γ') → ∣ α ∣T γ → ∣ α ∣T γ' → Prop j
+    _T_⊢_≤_ α {γ} {γ'} = ≤D α γ γ'
+
+    DispPreord-≡-intro : ∀ {i}{Γ : Preord i}{j} (α β : DispPreord Γ j) →
+        (e1 : (λ γ → ∣ α ∣T γ) ≡ (λ γ → ∣ β ∣T γ)) →
+        (≤D α) ≡ (λ γ γ' p x x' → ≤D β γ γ' p (trₜ (congr e1 γ) x) (trₜ (congr e1 γ') x')) → 
+        α ≡ β
+    DispPreord-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; ≤D = .(≤D α) ; refT = _ ; transT = _ } refl refl = refl
 
 module DispPreordReasoning {i}{Γ : Preord i}{j}(α : Displayed.DispPreord Γ j) where
     open Displayed

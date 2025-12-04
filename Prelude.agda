@@ -165,8 +165,14 @@ symm refl = refl
 tr : ∀ {i} {j} {X : Type i} (Y : X → Type j) {x x' : X} (p : x ≡ x') →  Y x → Y x'
 tr Y refl y = y
 
+trₜ : ∀ {i} {X Y : Type i} → X ≡ Y → X → Y
+trₜ refl x = x
+
 ap : ∀ {i} {j} {X : Type i} {Y : Type j} (f : X → Y) {x x' : X} (p : x ≡ x') → f x ≡ f x'
-ap f refl = refl 
+ap f refl = refl
+
+congr : ∀ {i} {j} {X : Type i} {Y : Type j} {f f' : X → Y} (φ : f ≡ f') (x : X) → f x ≡ f' x
+congr refl x = refl
 
 trₚ : ∀ {i} {j} {X : Type i} (Y : X → Prop j) {x x' : X} (p : x ≡ x') →  Y x → Y x'
 trₚ Y refl y = y

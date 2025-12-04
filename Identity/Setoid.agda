@@ -11,7 +11,7 @@ open Displayed
 Id : ∀ {i}{Γ : Setoid i}{j}{α : DispSetoid Γ j}(s t : SetoidSec Γ α) → DispSetoid Γ j
 Id {i}{Γ}{j}{α} s t = record
   { ∣_∣T_ = λ γ → ↑ps (α T refC Γ γ ⊢ ∣ s ∣t γ ~ ∣ t ∣t γ) 
-  ; _T_⊢_~_ = λ _ _ _ → ⊤p' 
+  ; ~D = λ _ _ _ _ _ → ⊤p' 
   ; refT = λ _ → ttp' 
   ; symT = λ _ → ttp' 
   ; transT = λ _ _ → ttp' 
@@ -34,15 +34,15 @@ module Fibrant where
     { ∣_∣t = λ γ → coeT (snd β) (refC Γ γ ,p un↑ps (∣ f ∣t γ)) (∣ b ∣t γ)
     ; ~t = λ {γ} {γ'} p →  
         let 
-          helper γ = (refC Γ γ) ,p un↑ps (∣ f ∣t γ)
-          open Disp~Reasoning (fst β)
+          refC,f γ = (refC Γ γ) ,p un↑ps (∣ f ∣t γ)
+          open DispSetoidReasoning (fst β)
         in
-          coeT (snd β) (helper γ) (∣ b ∣t γ) 
-              ~D⟨ reverseT (cohT (snd β) (helper γ) (∣ b ∣t γ)) ⟩
+          coeT (snd β) (refC,f γ) (∣ b ∣t γ) 
+              ~D⟨ reverseT (cohT (snd β) (refC,f γ) (∣ b ∣t γ)) ⟩
           ∣ b ∣t γ 
               ~D⟨ ~t b p ⟩
           ∣ b ∣t γ'
-              ~D⟨ cohT (snd β) (helper γ') (∣ b ∣t γ') ⟩
-          coeT (snd β) (helper γ') (∣ b ∣t γ')    
+              ~D⟨ cohT (snd β) (refC,f γ') (∣ b ∣t γ') ⟩
+          coeT (snd β) (refC,f γ') (∣ b ∣t γ')    
               ~D∎
     }

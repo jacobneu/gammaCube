@@ -20,6 +20,12 @@ record Preord i : Type (lsuc i) where
   infix 5 _C_≤_
 open Preord public
 
+Preord-≡-intro : ∀ {i}(Δ Γ : Preord i) → 
+  (e1 : ∣ Δ ∣C ≡ ∣ Γ ∣C) →
+  Δ C_≤_ ≡ (λ δ δ' → Γ C tr _ e1 δ ≤ tr _ e1 δ') →
+  Δ ≡ Γ
+Preord-≡-intro Δ record { ∣_∣C = .(∣ Δ ∣C) ; _C_≤_ = .(_C_≤_ Δ) ; refC = _ ; transC = _ } refl refl = refl
+
 record PreordMor {i j}(Γ : Preord i)(Δ : Preord j) : Type (i ⊔ j) where
   field
     ∣_∣s : ∣ Γ ∣C → ∣ Δ ∣C

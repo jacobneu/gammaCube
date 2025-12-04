@@ -20,6 +20,13 @@ record Setoid i : Type (lsuc i) where
   infix 5 _C_~_
 open Setoid public
 
+Setoid-≡-intro : ∀ {i}(Δ Γ : Setoid i) → 
+  (e1 : ∣ Δ ∣C ≡ ∣ Γ ∣C) →
+  Δ C_~_ ≡ (λ δ δ' → Γ C tr _ e1 δ ~ tr _ e1 δ') →
+  Δ ≡ Γ
+Setoid-≡-intro Δ record { ∣_∣C = .(∣ Δ ∣C) ; _C_~_ = .(_C_~_ Δ) ; refC = _ ; symC = _ ; transC = _ } refl refl = refl
+
+
 record SetoidMor {i j}(Γ : Setoid i)(Δ : Setoid j) : Type (i ⊔ j) where
   field
     ∣_∣s : ∣ Γ ∣C → ∣ Δ ∣C
@@ -27,7 +34,7 @@ record SetoidMor {i j}(Γ : Setoid i)(Δ : Setoid j) : Type (i ⊔ j) where
   infix 4 ∣_∣s
 open SetoidMor public
 
-module ~Reasoning {i} (Γ : Setoid i) where
+module SetoidReasoning {i} (Γ : Setoid i) where
 
   infixr 29 _⁻¹
   infixr 30 _~⟨_⟩_
