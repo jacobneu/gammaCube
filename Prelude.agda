@@ -190,5 +190,9 @@ record _≅_ {i} (X Y : Type i) : Type i where
     ≡idr : (y : Y) → ltr(rtl y) ≡ y
 open _≅_ public
 
+
 postulate
-  funext : ∀ {i}{X Y : Type i} → (f g : X → Y) → ((x : X) → f x ≡ g x) → f ≡ g
+  funext : ∀ {i}{j}{X : Type i}{Y : X → Type j}{f g : (x : X) → Y x} → ((x : X) → f x ≡ g x) → f ≡ g
+  funextp : ∀ {i}{j}{X : Prop i}{Y : X → Type j}{f g : (x : X) → Y x} → ((x : X) → f x ≡ g x) → f ≡ g
+  funexti : ∀ {i}{j}{X : Type i}{Y : X → Type j}{f g : {x : X} → Y x} → ((x : X) → f {x} ≡ g {x}) → (λ {x} → f {x}) ≡ g
+  propext : ∀ {i}{X Y : Prop i} → X ↔ Y → X ≡ Y

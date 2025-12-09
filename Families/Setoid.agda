@@ -25,11 +25,11 @@ module Displayed where
     _T_⊢_~_ : ∀ {i}{Γ : Setoid i}{j}(α : DispSetoid Γ j){γ γ'}(p : Γ C γ ~ γ') → ∣ α ∣T γ → ∣ α ∣T γ' → Prop j
     _T_⊢_~_ α {γ} {γ'} = ~D α γ γ'
 
-    DispSetoid-≡-intro : ∀ {i}{Γ : Setoid i}{j} (α β : DispSetoid Γ j) →
+    DispSetoid-≡-intro : ∀ {i}{Γ : Setoid i}{j} {α β : DispSetoid Γ j} →
         (e1 : (λ γ → ∣ α ∣T γ) ≡ (λ γ → ∣ β ∣T γ)) →
         (~D α) ≡ (λ γ γ' p x x' → ~D β γ γ' p (trₜ (congr e1 γ) x) (trₜ (congr e1 γ') x')) → 
         α ≡ β
-    DispSetoid-≡-intro α record { ∣_∣T_ = .(∣_∣T_ α) ; ~D = .(~D α) ; refT = _ ; symT = _ ; transT = _ } refl refl = refl
+    DispSetoid-≡-intro {i}{Γ}{j}{α} {record { ∣_∣T_ = .(∣_∣T_ α) ; ~D = .(~D α) ; refT = _ ; symT = _ ; transT = _ }} refl refl = refl
 
 module DispSetoidReasoning {i}{Γ : Setoid i}{j}(α : Displayed.DispSetoid Γ j) where
     open Displayed
@@ -68,7 +68,12 @@ module Pseudo where
     psSetoidFam-is-DispSetoid : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → DispSetoid Γ j
     psSetoidFam-is-DispSetoid Γ j = fst
 
-    -- psSetoidFam-≡-intro : 
+    psSetoidFam-≡-intro : ∀ {i}{Γ : Setoid i}{j} {α β : psSetoidFam Γ j} →
+        (e1 : (λ γ → ∣ fst α ∣T γ) ≡ (λ γ → ∣ fst β ∣T γ)) →
+        (~D (fst α)) ≡ (λ γ γ' p x x' → ~D (fst β) γ γ' p (trₜ (congr e1 γ) x) (trₜ (congr e1 γ') x')) →
+        (λ {γ} {γ'} → coeT (snd α) {γ} {γ'}) ≡ (λ {γ} {γ'} p x → trₜ (symm (congr e1 γ')) (coeT (snd β) {γ} {γ'} p (trₜ (congr e1 γ) x))) →
+        α ≡ β
+    psSetoidFam-≡-intro {i} {Γ} {j} {α} {record { ∣_∣T_ = .(∣_∣T_ (fst α)) ; ~D = .(~D (fst α)) ; refT = _ ; symT = _ ; transT = _ } , record { coeT = .(coeT (snd α)) ; cohT = _ } } refl refl refl = refl 
 
     record PseudoFunctor {i}(Γ : Setoid i) j : Type (i ⊔ lsuc j) where
         field
@@ -85,6 +90,13 @@ module Pseudo where
         (fst α) T refC Γ γ ⊢ x ~ y →
         (fst α) T refC Γ γ' ⊢ coeT (snd α) p x ~ coeT (snd α) p y
     psFam-functorial α p {x}{y} φ = transT (fst α) (symT (fst α) (cohT (snd α) p x)) (transT (fst α) φ (cohT (snd α) p y))  
+
+    hetRed : ∀ {i}{Γ : Setoid i}{j}{α : psSetoidFam Γ j}(γ γ' : ∣ Γ ∣C)(p : Γ C γ ~ γ')(x : ∣ fst α ∣T γ)(x' : ∣ fst α ∣T γ') →
+        (fst α T (refC Γ γ') ⊢ coeT (snd α) p x ~ x') ↔ (fst α T p ⊢ x ~ x')
+    hetRed {i}{Γ}{j}{α} γ γ' p x x' =
+        (λ φ → transT (fst α) (cohT (snd α) p x)  φ ) 
+        ,p
+        λ ψ → transT (fst α) (symT (fst α) (cohT (snd α) p x)) ψ 
 
     psFam-to-psFunct : ∀ {i} (Γ : Setoid i) j → psSetoidFam Γ j → PseudoFunctor Γ j
     psFam-to-psFunct Γ j α = 
@@ -151,6 +163,17 @@ module Pseudo where
        { coeT = λ p → ∣ mor A p ∣s 
        ; cohT = λ {γ} {γ'} p x → refC (obj A γ') (∣ mor A p ∣s x) 
        }
+
+    psSetoidEquiv : ∀ {i}(Γ : Setoid i){j} → psSetoidFam Γ j ≅ PseudoFunctor Γ j
+    psSetoidEquiv Γ {j} = record 
+        { ltr = psFam-to-psFunct Γ j
+        ; rtl = psFunct-to-psFam Γ j
+        ; ≡idl = λ α → psSetoidFam-≡-intro
+            refl
+            (funext λ γ → funext λ γ' → funextp λ p → funext (λ x → funext (λ x' → propext (hetRed {α = α} γ γ' p x x'))))
+            (funexti (λ _ → funexti (λ _ → funextp (λ _ → funext (λ _ → refl)))))
+        ; ≡idr = {!   !} 
+        }
 
 module Split where
 
